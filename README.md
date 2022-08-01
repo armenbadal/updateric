@@ -7,9 +7,9 @@
 թողարկված տարբերակները։
 
 Պարզության համար ընդունենք, որ `programma`֊ն տեղադրված է 
-օգտագործողի `$HOME/programma` պանակում, և բաղկացած է
-նվազագույնը երկու ֆայլից․ `version.json` և `programma.py`։
-Առաջինում գրածված է ծրագրի ընթացիկ տարբերակը։ Օրինակ․
+օգտագործողի `$HOME/programma` պանակում, և բաղկացած է նվազագույնը 
+երկու ֆայլից․ `version.json` և `programma.py`։ Առաջինում գրածված 
+է ծրագրի ընթացիկ տարբերակը։ Օրինակ․
 
 ```json
 {
@@ -24,7 +24,7 @@
 #!/usr/bin/python
 
 if __name__ == '__main__':
-    print('I am Programma, v0.1')
+    print('I am Programma.')
 ```
 
 Մեր `programma` ծրագի նոր թողարկումները հրապարակվում են համացանցի 
@@ -39,10 +39,8 @@ if __name__ == '__main__':
         "major": 0,
         "minor": 2
     },
-    "bundle": {
-        "archive": "https://some.web.storge/programma.zip",
-        "sha1": "fe90cf2b46ac87d68a547602924b35cb11f768e7"
-    }
+    "url": "https://some.web.storge/programma.zip",
+    "sha1": "fe90cf2b46ac87d68a547602924b35cb11f768e7"
 }
 ```
 
@@ -84,7 +82,7 @@ func main() {
 
 Ճիշտ աշխատելու համար `updater`֊ը պետք է իմանա երկու բան․ ա) թե 
 օգտագործողի մոտ որտեղ է տեղադրված `programma`֊ն, և բ) թե համացանցում
-որտեղ են հրապարակվում `programma`֊ի հերթակյան թողարկումները։ Այս
+որտեղ են հրապարակվում `programma`֊ի հերթական թողարկումները։ Այս
 երկու պարամետրերի համար նախատեսել եմ `config.json` ֆայլը։ Օրինակ, 
 այսպես․
 
@@ -96,10 +94,10 @@ func main() {
 ```
 
 Առաջին հերթին `updater`֊ը պետք է կարդա այս ֆայլը ու իր մոտ պահի 
-դրանում նշված տվյալները։ Սահմանեմ `Configuration` ստրուկտուրան․
+դրանում նշված տվյալները։ Սահմանեմ `configuration` ստրուկտուրան․
 
 ```Go
-type Configuration struct {
+type configuration struct {
 	ApplicationPath string `json:"application-path"`
 	UpdateInfoUrl   string `json:"update-info-url"`
 }
@@ -135,22 +133,22 @@ func readJsonFile(file string, obj any) error {
 `version.json` ֆայլերի պարունակությունները կարդալու և համապատասխան 
 օբյեկտներն արժեքավորելու համար։
 
-Հաջորդ՝ ինտերնետից `release-info.json` ֆայլը ներբեռնելու ու դրա
+Ինտերնետից `release-info.json` ֆայլը ներբեռնելու ու դրա 
 պարունակությունը կարդալու համար օգտագործելու եմ 
-[grab](https://github.com/cavaliergopher/grab) գրադարանը։ Ավելացնեմ այն 
-իմ պրոյեկտին․
+[grab](https://github.com/cavaliergopher/grab) գրադարանը։ 
+Ավելացնեմ այն իմ պրոյեկտին․
 
 ```bash
 $ go get github.com/cavaliergopher/grab/v3
 ```
 
 Հետո սահմանեմ `downloadFile` ֆունկցիան, որը տրված URL֊ից ֆայլը
-ներբեռնում է տրված պանակում, ապա վերադարձնում է ներբեռնված ֆայլի
-ճանապարհը։
+ներբեռնում է ժամանակավոր ֆայլերի պանակում և ապա վերադարձնում է 
+ներբեռնված ֆայլի ճանապարհը։
 
 ```Go
-func downloadFile(to, from string) (string, error) {
-	resp, err := grab.Get(to, from)
+func downloadFile(from string) (string, error) {
+	resp, err := grab.Get(os.TempDir(), from)
 	if err != nil {
 		return "", err
 	}
@@ -164,10 +162,8 @@ func downloadFile(to, from string) (string, error) {
 ```Go
 type release struct {
 	Version version `json:"version"`
-	Bundle  struct {
-		Url  string `json:"url"`
-		Sha1 string `json:"sha1"`
-	} `json:"bundle"`
+	Url  string `json:"url"`
+    Sha1 string `json:"sha1"`
 }
 ```
 

@@ -41,7 +41,7 @@ func (v version) isNewer(x version) bool {
 }
 
 // թողարկման մասին տեղեկություննները
-type release struct {
+type manifest struct {
 	// թողարկման տարբերակը
 	Version version `json:"version"`
 	// ծրագրի արխիվի հասցեն է ․․․
@@ -61,8 +61,8 @@ func main() {
 		log.Fatal("Չկարողացա ներբեռնել release-info.json ֆայլը։")
 	}
 
-	var ri release
-	if readJsonFile(relInfo, &ri) != nil {
+	var mf manifest
+	if readJsonFile(relInfo, &mf) != nil {
 		log.Fatal("Չկարողացա կարդալ release-info.json ֆայլը։")
 	}
 
@@ -72,10 +72,10 @@ func main() {
 		log.Fatal("Չկարողացա կարդալ version.json ֆայլը։")
 	}
 
-	if ri.Version.isNewer(vo) {
-		bundle, err := downloadFile(ri.Url)
+	if mf.Version.isNewer(vo) {
+		bundle, err := downloadFile(mf.Url)
 		if err != nil {
-			log.Fatalf("Չկարողացա ներբեռնել %s ֆայլը։", ri.Url)
+			log.Fatalf("Չկարողացա ներբեռնել %s ֆայլը։", mf.Url)
 		}
 
 		shab, err := calculateSha1(bundle)
@@ -83,11 +83,12 @@ func main() {
 			log.Fatalf("Չկարողացա հաշվել %s֊ի SHA1֊ը", bundle)
 		}
 
-		if shab != ri.Sha1 {
+		if shab != mf.Sha1 {
 			log.Fatal("Ներբեռնված արխիվի SHA1֊ը չի համընկնում հայտարարվածին։")
 		}
 
-		err = os.Rename(conf.ApplicationPath, conf.ApplicationPath+"_backup")
+		backupPath := conf.ApplicationPath + "_backup"
+		err = os.Rename(conf.ApplicationPath, backupPath)
 		if err != nil {
 			log.Fatal("Չկարողացա անվանափոխել տեղադրված ծրագրի պանակը։")
 		}
@@ -95,10 +96,10 @@ func main() {
 		err = extractZip(bundle, filepath.Dir(conf.ApplicationPath))
 		if err != nil {
 			log.Fatal("Չկարողացա բացել ներբեռնված արխիվը։")
-			os.Rename(conf.ApplicationPath+"_backup", conf.ApplicationPath)
+			os.Rename(backupPath, conf.ApplicationPath)
 		}
 
-		os.RemoveAll(conf.ApplicationPath + "_backup")
+		os.RemoveAll(backupPath)
 	}
 
 	println("Programma updated")
@@ -170,8 +171,8 @@ func extractZip(file, to string) error {
 	return nil
 }
 
-// calculateSha1 ֆունկցիան հաշվարկում և տողի տեսքով վերադարձնում
-// է տրված ֆայլի SHA1-ը
+// calculateSha1 ֆունկցիան հաշվարկում և տողի տեսքով
+// վերադարձնում է տրված ֆայլի SHA1-ը
 func calculateSha1(ph string) (string, error) {
 	f, e := os.Open(ph)
 	if e != nil {
