@@ -2,6 +2,7 @@ package main
 
 import (
 	"archive/zip"
+	"crypto/sha1"
 	"encoding/json"
 	"io"
 	"io/ioutil"
@@ -69,7 +70,8 @@ func main() {
 	}
 
 	var vo version
-	if readJsonFile(filepath.Join(conf.ApplicationPath, "version.json"), &vo) != nil {
+	verFile := filepath.Join(conf.ApplicationPath, "version.json")
+	if readJsonFile(verFile, &vo) != nil {
 		log.Fatal("Չկարողացա կարդալ version.json ֆայլը։")
 	}
 
@@ -78,7 +80,15 @@ func main() {
 		if err != nil {
 			log.Fatalf("Չկարողացա ներբեռնել %s ֆայլը։", ri.Bundle.Url)
 		}
-		// TODO: Calculate and compare SHA1s
+
+		shab, err := calculateSha1(bundle)
+		if err != nil {
+			log.Fatalf("Չկարողացա հաշվել %s֊ի SHA1֊ը", bundle)
+		}
+
+		if shab != ri.Bundle.Sha1 {
+			log.Fatal("Ներբեռնված արխիվի SHA1֊ը չի համընկնում հայտարարվածին։")
+		}
 
 		err = os.Rename(conf.ApplicationPath, conf.ApplicationPath+"_backup")
 		if err != nil {
@@ -161,4 +171,20 @@ func extractZip(file, to string) error {
 	}
 
 	return nil
+}
+
+func calculateSha1(ph string) (string, error) {
+	f, e := os.Open(ph)
+	if e != nil {
+		return "", e
+	}
+	defer f.Close()
+
+	sum := sha1.New()
+	_, e = io.Copy(sum, f)
+	if e != nil {
+		return "", e
+	}
+
+	return string(sum.Sum(nil)), nil
 }
