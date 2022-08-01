@@ -44,13 +44,10 @@ func (v version) isNewer(x version) bool {
 type release struct {
 	// թողարկման տարբերակը
 	Version version `json:"version"`
-	// ծրագրի փաթեթը, որում ․․․
-	Bundle struct {
-		// ․․․ արխիվի հասցեն է ․․․
-		Url string `json:"url"`
-		// ․․․ և sha1 կոդը
-		Sha1 string `json:"sha1"`
-	} `json:"bundle"`
+	// ծրագրի արխիվի հասցեն է ․․․
+	Url string `json:"url"`
+	// ․․․ և sha1 կոդը
+	Sha1 string `json:"sha1"`
 }
 
 func main() {
@@ -59,7 +56,7 @@ func main() {
 		log.Fatal("Չկարողացա կարդալ պարամետրերի ֆայլը։")
 	}
 
-	relInfo, err := downloadFile(os.TempDir(), conf.ReleaseInfoUrl)
+	relInfo, err := downloadFile(conf.ReleaseInfoUrl)
 	if err != nil {
 		log.Fatal("Չկարողացա ներբեռնել release-info.json ֆայլը։")
 	}
@@ -76,9 +73,9 @@ func main() {
 	}
 
 	if ri.Version.isNewer(vo) {
-		bundle, err := downloadFile(os.TempDir(), ri.Bundle.Url)
+		bundle, err := downloadFile(ri.Url)
 		if err != nil {
-			log.Fatalf("Չկարողացա ներբեռնել %s ֆայլը։", ri.Bundle.Url)
+			log.Fatalf("Չկարողացա ներբեռնել %s ֆայլը։", ri.Url)
 		}
 
 		shab, err := calculateSha1(bundle)
@@ -86,7 +83,7 @@ func main() {
 			log.Fatalf("Չկարողացա հաշվել %s֊ի SHA1֊ը", bundle)
 		}
 
-		if shab != ri.Bundle.Sha1 {
+		if shab != ri.Sha1 {
 			log.Fatal("Ներբեռնված արխիվի SHA1֊ը չի համընկնում հայտարարվածին։")
 		}
 
@@ -130,8 +127,8 @@ func readJsonFile(file string, obj any) error {
 
 // downloadFile ֆունկցիան ներբեռնում է from հասցեով ֆայլը
 // և այն պահում է to պանակում
-func downloadFile(to, from string) (string, error) {
-	resp, err := grab.Get(to, from)
+func downloadFile(from string) (string, error) {
+	resp, err := grab.Get(os.TempDir(), from)
 	if err != nil {
 		return "", err
 	}
@@ -173,6 +170,8 @@ func extractZip(file, to string) error {
 	return nil
 }
 
+// calculateSha1 ֆունկցիան հաշվարկում և տողի տեսքով վերադարձնում
+// է տրված ֆայլի SHA1-ը
 func calculateSha1(ph string) (string, error) {
 	f, e := os.Open(ph)
 	if e != nil {

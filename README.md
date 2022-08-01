@@ -136,7 +136,9 @@ func readJsonFile(file string, obj any) error {
 օբյեկտներն արժեքավորելու համար։
 
 Հաջորդ՝ ինտերնետից `release-info.json` ֆայլը ներբեռնելու ու դրա
-պարունակությունը կարդալու համար օգտագործելու եմ [grab](https://github.com/cavaliergopher/grab) գրադարանը։ Ավելացնեմ այն իմ պրոյեկտին․
+պարունակությունը կարդալու համար օգտագործելու եմ 
+[grab](https://github.com/cavaliergopher/grab) գրադարանը։ Ավելացնեմ այն 
+իմ պրոյեկտին․
 
 ```bash
 $ go get github.com/cavaliergopher/grab/v3
@@ -163,8 +165,8 @@ func downloadFile(to, from string) (string, error) {
 type release struct {
 	Version version `json:"version"`
 	Bundle  struct {
-		Url    string `json:"url"`
-		Sha256 string `json:"sha256"`
+		Url  string `json:"url"`
+		Sha1 string `json:"sha1"`
 	} `json:"bundle"`
 }
 ```

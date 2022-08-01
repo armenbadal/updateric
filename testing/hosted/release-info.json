@@ -3,8 +3,6 @@
         "major": 0,
         "minor": 2
     },
-    "bundle": {
-        "url": "http://localhost:8090/programma.zip",
-        "sha1": "fe90cf2b46ac87d68a547602924b35cb11f768e7" 
-    }
+    "url": "http://localhost:8090/programma.zip",
+    "sha1": "fe90cf2b46ac87d68a547602924b35cb11f768e7" 
 }
